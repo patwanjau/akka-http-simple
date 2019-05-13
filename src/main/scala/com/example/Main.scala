@@ -1,14 +1,16 @@
 package com.example
 
-import akka.actor.ActorSystem
+import akka.event.Logging
 import akka.http.scaladsl.Http
-import akka.stream.ActorMaterializer
+import akka.http.scaladsl.server.directives.DebuggingDirectives
+import com.example.routes.SlackWebHooks
+import com.example.util.Implicits._
 
 object Main extends App {
 
-  implicit val system = ActorSystem()
-  implicit val executionContext = system.dispatcher
-  implicit val materializer = ActorMaterializer()
+  val routes = (new SlackWebHooks).route
 
-  Http().bindAndHandle(null, host, port)
+  val loggedRoute = DebuggingDirectives.logRequestResult("Akka HTTP Simple", Logging.InfoLevel)(routes)
+
+  Http().bindAndHandle(loggedRoute, host, port)
 }
